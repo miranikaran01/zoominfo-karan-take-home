@@ -9,5 +9,4 @@ public class KaranTakeHomeApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(KaranTakeHomeApplication.class, args);
 	}
-
 }

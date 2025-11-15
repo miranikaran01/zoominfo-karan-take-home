@@ -1,1 +1,19 @@
 services:
+  faster-whisper-server:
+    image: fedirz/faster-whisper-server:sha-307e23f-cpu
+    container_name: faster-whisper
+    ports:
+      - 8000:8000
+    restart: unless-stopped
+
+  karan-take-home:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: karan-take-home:latest
+    container_name: karan-take-home
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    depends_on:
+      - faster-whisper-server
