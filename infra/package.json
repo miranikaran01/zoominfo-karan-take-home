@@ -1,14 +1,12 @@
 {
     "name": "karan-take-home-infra",
     "version": "0.1.0",
-    "bin": {
-      "karan-take-home-infra": "bin/app.js"
-    },
+    "private": true,
     "scripts": {
-      "build": "tsc",
-      "watch": "tsc -w",
-      "deploy": "npx aws-cdk deploy",
-      "synth": "npx aws-cdk synth"
+      "build": "tsc -p tsconfig.json",
+      "synth": "npm run build && npx aws-cdk synth",
+      "deploy": "npm run build && npx aws-cdk deploy --require-approval never",
+      "diff": "npm run build && npx aws-cdk diff"
     },
     "devDependencies": {
       "@types/node": "22.13.10",
@@ -16,5 +14,5 @@
       "constructs": "10.4.3",
       "typescript": "5.8.2"
     }
-  }
+}
   

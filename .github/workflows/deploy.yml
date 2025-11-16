@@ -61,11 +61,6 @@ jobs:
         run: |
           npm ci
 
-      - name: Build CDK
-        working-directory: infra
-        run: |
-          npm run build
-
       - name: Synthesize CDK stack
         working-directory: infra
         run: |
