@@ -1,0 +1,77 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: $AWS_REGION
+      ECR_REPOSITORY: speech-to-text
+      CDK_STACK_NAME: SpeechToTextEcsStack
+      AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build Jar
+        run: ./gradlew build
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::058576480351:role/SpeechToTextGitHubActions
+          aws-region: $AWS_REGION
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/${ECR_REPOSITORY}:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/${ECR_REPOSITORY}:$IMAGE_TAG
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install CDK dependencies
+        working-directory: infra
+        run: |
+          npm ci
+
+      - name: Build CDK
+        working-directory: infra
+        run: |
+          npm run build
+
+      - name: Bootstrap CDK (first time only effectively)
+        working-directory: infra
+        run: |
+          npx cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION || true
+
+      - name: Deploy CDK stack
+        working-directory: infra
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: npx cdk deploy $CDK_STACK_NAME --require-approval never
