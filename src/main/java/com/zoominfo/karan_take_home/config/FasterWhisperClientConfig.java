@@ -7,6 +7,7 @@ import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 import com.zoominfo.karan_take_home.clients.FasterWhisperClient;
+import com.zoominfo.karan_take_home.interceptors.FasterWhisperClientInterceptor;
 
 @Configuration
 public class FasterWhisperClientConfig {
@@ -15,6 +16,7 @@ public class FasterWhisperClientConfig {
     public FasterWhisperClient fasterWhisperClient() {
         WebClient webClient = WebClient.builder()
             .baseUrl("http://faster-whisper-server:8000")
+            .filter(FasterWhisperClientInterceptor.all())
             .build();
         HttpServiceProxyFactory factory = HttpServiceProxyFactory.builder()
             .exchangeAdapter(WebClientAdapter.create(webClient))
