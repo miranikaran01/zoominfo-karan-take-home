@@ -8,11 +8,16 @@
       "deploy": "npm run build && npx aws-cdk deploy --require-approval never",
       "diff": "npm run build && npx aws-cdk diff"
     },
+    "dependencies": {
+      "aws-cdk-lib": "^2.38.0",
+      "constructs": "^10.0.0"
+    },
+    "peerDependencies": {
+      "aws-cdk-lib": "^2.38.0",
+      "constructs": "^10.0.0"
+    },
     "devDependencies": {
       "@types/node": "22.13.10",
-      "aws-cdk-lib": "2.224.0",
-      "constructs": "10.4.3",
-      "typescript": "5.8.2",
-      "aws-cdk": "2.224.0"
+      "typescript": "5.8.2"
     }
 }  
