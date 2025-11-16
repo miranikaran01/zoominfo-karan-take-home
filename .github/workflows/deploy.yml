@@ -66,10 +66,10 @@ jobs:
         run: |
           npm run build
 
-      - name: Bootstrap CDK (first time only effectively)
+      - name: Synthesize CDK stack
         working-directory: infra
         run: |
-          npm run bootstrap
+          npm run synth
 
       - name: Deploy CDK stack
         working-directory: infra
