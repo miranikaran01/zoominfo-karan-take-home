@@ -13,7 +13,6 @@ build/
 .settings
 .springBeans
 .sts4-cache
-bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
@@ -41,3 +40,4 @@ out/
 infra/dist/
 infra/node_modules/
 infra/cdk.out/
+!infra/bin/
