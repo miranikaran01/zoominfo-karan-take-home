@@ -13,10 +13,10 @@ jobs:
       contents: read
 
     env:
-      AWS_REGION: $AWS_REGION
+      AWS_REGION: ${{ vars.AWS_REGION }}
       ECR_REPOSITORY: speech-to-text
       CDK_STACK_NAME: SpeechToTextEcsStack
-      AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
 
     steps:
       - name: Checkout
@@ -34,7 +34,7 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::058576480351:role/SpeechToTextGitHubActions
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/SpeechToTextGitHubActions
           aws-region: $AWS_REGION
 
       - name: Login to Amazon ECR
