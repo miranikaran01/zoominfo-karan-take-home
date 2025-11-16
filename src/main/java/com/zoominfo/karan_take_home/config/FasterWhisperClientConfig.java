@@ -1,5 +1,6 @@
 package com.zoominfo.karan_take_home.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -12,10 +13,13 @@ import com.zoominfo.karan_take_home.interceptors.FasterWhisperClientInterceptor;
 @Configuration
 public class FasterWhisperClientConfig {
     
+    @Value("${faster.whisper.url}")
+    private String fasterWhisperUrl;
+    
     @Bean
     public FasterWhisperClient fasterWhisperClient() {
         WebClient webClient = WebClient.builder()
-            .baseUrl("http://faster-whisper-server:8000")
+            .baseUrl(fasterWhisperUrl)
             .filter(FasterWhisperClientInterceptor.all())
             .build();
         HttpServiceProxyFactory factory = HttpServiceProxyFactory.builder()

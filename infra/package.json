@@ -1,0 +1,20 @@
+{
+    "name": "karan-take-home-infra",
+    "version": "0.1.0",
+    "bin": {
+      "karan-take-home-infra": "bin/app.js"
+    },
+    "scripts": {
+      "build": "tsc",
+      "watch": "tsc -w",
+      "cdk": "cdk",
+      "deploy": "cdk deploy",
+      "synth": "cdk synth"
+    },
+    "devDependencies": {
+      "aws-cdk-lib": "^2.150.0",
+      "constructs": "^10.3.0",
+      "typescript": "^5.6.0"
+    }
+  }
+  

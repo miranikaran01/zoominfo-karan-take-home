@@ -17,3 +17,6 @@ services:
     restart: unless-stopped
     depends_on:
       - faster-whisper-server
+    environment:
+      # Use service name for Docker Compose networking
+      WHISPER_URL: http://faster-whisper-server:8000
