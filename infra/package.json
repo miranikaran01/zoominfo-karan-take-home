@@ -7,10 +7,8 @@
     "scripts": {
       "build": "tsc",
       "watch": "tsc -w",
-      "cdk": "npx aws-cdk",
-      "deploy": "npm run build && npx aws-cdk deploy",
-      "synth": "npm run build && npx aws-cdk synth",
-      "bootstrap": "npx aws-cdk bootstrap"
+      "deploy": "npx aws-cdk deploy",
+      "synth": "npx aws-cdk synth"
     },
     "devDependencies": {
       "@types/node": "22.13.10",
