@@ -69,10 +69,10 @@ jobs:
       - name: Bootstrap CDK (first time only effectively)
         working-directory: infra
         run: |
-          npx cdk bootstrap aws://${{ vars.AWS_ACCOUNT_ID }}/${{ vars.AWS_REGION }} || true
+          npm run bootstrap
 
       - name: Deploy CDK stack
         working-directory: infra
         env:
           IMAGE_TAG: ${{ github.sha }}
-        run: npx cdk deploy $CDK_STACK_NAME --require-approval never
+        run: npm run deploy
