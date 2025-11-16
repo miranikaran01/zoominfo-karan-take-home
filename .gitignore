@@ -40,3 +40,4 @@ out/
 ### CDK ###
 infra/dist/
 infra/node_modules/
+infra/cdk.out/

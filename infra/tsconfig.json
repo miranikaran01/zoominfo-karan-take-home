@@ -36,6 +36,9 @@
   "include": [
     "lib/**/*.ts",
     "bin/**/*.ts"
+  ],
+  "files": [
+    "bin/app.ts"
   ]
 }
 
