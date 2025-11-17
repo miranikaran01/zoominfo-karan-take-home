@@ -62,11 +62,11 @@ If you prefer to run the application directly:
 1. **Start the Faster Whisper server**:
    ```bash
    docker run -d -p 8000:8000 --name faster-whisper \
-     -e MODEL=Systran/faster-whisper-small \
+     -e WHISPER__MODEL=Systran/faster-whisper-small \
      fedirz/faster-whisper-server:sha-307e23f-cpu
    ```
    
-   **Note**: The `MODEL=Systran/faster-whisper-small` environment variable configures the server to use the smallest model, which minimizes resource usage.
+   **Note**: The `WHISPER__MODEL=Systran/faster-whisper-small` environment variable (with double underscore) configures the server to use the smallest model, which minimizes resource usage. According to the [faster-whisper-server configuration](https://github.com/etalab-ia/faster-whisper-server/blob/master/src/faster_whisper_server/config.py), nested configuration values use `__` as the delimiter, so `WHISPER__MODEL` maps to `whisper.model`. The Faster Whisper server is provided by [faster-whisper-server](https://github.com/etalab-ia/faster-whisper-server), an OpenAI API-compatible transcription server.
 
 2. **Set environment variable**:
    ```bash
@@ -195,6 +195,7 @@ management.endpoints.web.base-path=/management
 2. **Faster Whisper Server** (`faster-whisper-server`)
    - ML model server for speech transcription
    - Runs as a separate container/service
+   - Uses the [faster-whisper-server](https://github.com/etalab-ia/faster-whisper-server) project, an OpenAI API-compatible transcription server
 
 ### Local Development Architecture
 
@@ -392,6 +393,12 @@ The project uses:
 - Application runs on port `8080` by default
 - Faster Whisper server runs on port `8000`
 - Modify ports in `docker-compose-local.yaml` if needed
+
+## Credits
+
+This project uses the following open-source components:
+
+- **[faster-whisper-server](https://github.com/etalab-ia/faster-whisper-server)**: An OpenAI API-compatible transcription server that uses faster-whisper as its backend. The Docker image `fedirz/faster-whisper-server:sha-307e23f-cpu` is used for speech-to-text transcription.
 
 ## License
 

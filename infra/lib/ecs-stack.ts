@@ -81,7 +81,8 @@ export class EcsStack extends cdk.Stack {
       memoryLimitMiB: 3584,
       environment: {
         // Use the smallest model to minimize resource usage
-        MODEL: 'Systran/faster-whisper-small',
+        // Note: Use WHISPER__MODEL (double underscore) to set the nested whisper.model config
+        WHISPER__MODEL: 'Systran/faster-whisper-small',
       },
       portMappings: [
         {
