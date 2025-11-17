@@ -2,6 +2,14 @@
 
 A Spring Boot microservice that provides speech-to-text transcription capabilities using the Faster Whisper model. The service accepts audio files and returns real-time transcription results via Server-Sent Events (SSE).
 
+## Production Server
+
+This project is hosted at:
+
+**http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com**
+
+All endpoints and health checks can be tested live against the production server. See the [API Documentation](#api-documentation) and [Health Checks](#health-checks) sections for details.
+
 ## Features
 
 - 🎤 **Audio Transcription**: Convert audio files to text using Faster Whisper models
@@ -59,7 +67,10 @@ docker-compose -f docker-compose-local.yaml down
 
 ### Swagger UI
 
-Once the application is running, access the interactive API documentation [here](http://speech-speec-k3qudbyttljw-985865704.us-east-1.elb.amazonaws.com/api/v1/swagger-ui/index.html)
+Access the interactive API documentation:
+
+- **Production**: [http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/api/v1/docs](http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/api/v1/docs)
+- **Local**: `http://localhost:8080/api/v1/docs` (when running locally)
 
 The Swagger UI provides:
 - Complete API endpoint documentation
@@ -82,13 +93,24 @@ Transcribes an audio file to text using the Faster Whisper model.
 - `model` (optional): Faster Whisper model to use (default: "Systran/faster-whisper-small")
 - `stream` (optional): Whether to stream results (default: false)
 
-**Example using cURL:**
+**Example using cURL (Production):**
+```bash
+curl -X POST http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/speech-to-text \
+  -F "file=@audio.wav" \
+  -F "language=en" \
+  -F "model=Systran/faster-whisper-small" \
+  -F "stream=true" \
+  --no-buffer
+```
+
+**Example using cURL (Local):**
 ```bash
 curl -X POST http://localhost:8080/speech-to-text \
   -F "file=@audio.wav" \
   -F "language=en" \
   -F "model=Systran/faster-whisper-small" \
-  -F "stream=true"
+  -F "stream=true" \
+  --no-buffer
 ```
 
 **Note**: This service has been tested with the [Four Max Carrados Detective Stories MP3 file](https://archive.org/download/carrados_librivox/four_max_carrados_detective_stories_04_bramah.mp3) from Archive.org. See the [Testing](#testing) section for more details.
@@ -99,6 +121,12 @@ The application exposes health check endpoints via Spring Boot Actuator:
 
 ### Health Endpoint
 
+**Production:**
+```
+GET http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/management/health
+```
+
+**Local:**
 ```
 GET http://localhost:8080/management/health
 ```
@@ -108,6 +136,11 @@ GET http://localhost:8080/management/health
 {
   "status": "UP"
 }
+```
+
+You can test the health check live against the production server using:
+```bash
+curl http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/management/health
 ```
 ## Architecture
 
@@ -198,15 +231,30 @@ This application has been tested with the following audio file:
 
 You can download and test the service with this file using:
 
+**Production:**
 ```bash
 # Download the test file
 curl -O https://archive.org/download/carrados_librivox/four_max_carrados_detective_stories_04_bramah.mp3
 
-# Test transcription
+# Test transcription against production server
+curl -X POST http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/speech-to-text \
+  -F "file=@four_max_carrados_detective_stories_04_bramah.mp3" \
+  -F "language=en" \
+  -F "stream=true" \
+  --no-buffer
+```
+
+**Local:**
+```bash
+# Download the test file
+curl -O https://archive.org/download/carrados_librivox/four_max_carrados_detective_stories_04_bramah.mp3
+
+# Test transcription locally
 curl -X POST http://localhost:8080/speech-to-text \
   -F "file=@four_max_carrados_detective_stories_04_bramah.mp3" \
   -F "language=en" \
-  -F "stream=true" 
+  -F "stream=true" \
+  --no-buffer
 ```
 
 ## Deployment
