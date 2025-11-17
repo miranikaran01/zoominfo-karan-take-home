@@ -49,6 +49,7 @@ export class EcsStack extends cdk.Stack {
             WHISPER_URL: 'http://localhost:8000',
           },
         },
+        healthCheckGracePeriod: cdk.Duration.seconds(200)
       },
     );
 
@@ -57,7 +58,7 @@ export class EcsStack extends cdk.Stack {
       interval: cdk.Duration.seconds(30),
       timeout: cdk.Duration.seconds(5),
       healthyHttpCodes: '200',
-      port: 'traffic-port',
+      port: '8080',
       unhealthyThresholdCount: 3,
       healthyThresholdCount: 3,
     });
@@ -92,16 +93,13 @@ export class EcsStack extends cdk.Stack {
       healthCheck: {
         command: [
           'CMD-SHELL',
-          [
-            'echo "[healthcheck] running" &&',
-            'curl -sf http://localhost:8000/health',
-            '&& echo "[healthcheck] OK" || (echo "[healthcheck] FAILED" >&2; exit 1)'
-      ].join(' ')
+          // Use Python's urllib instead of curl (Python is available in faster-whisper-server container)
+          'python3 -c "import urllib.request; urllib.request.urlopen(\'http://localhost:8000/health\').read()" || exit 1',
         ],
         interval: cdk.Duration.seconds(30),
-        timeout: cdk.Duration.seconds(5),
+        timeout: cdk.Duration.seconds(10),
         retries: 3,
-        startPeriod: cdk.Duration.seconds(300),
+        startPeriod: cdk.Duration.seconds(180), 
       },
     });
 

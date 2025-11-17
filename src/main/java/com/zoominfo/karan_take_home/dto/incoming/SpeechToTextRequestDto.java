@@ -1,15 +1,16 @@
 package com.zoominfo.karan_take_home.dto.incoming;
 
-import jakarta.validation.constraints.NotEmpty;
-import lombok.Builder;
 import org.springframework.web.multipart.MultipartFile;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import com.zoominfo.karan_take_home.SpeechToTextRequest;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+
 /*
  * Immutable request DTO for speech to text conversion
- * @param file The audio file to convert to text. Must not be empty.
+ * @param file The audio file to convert to text. Must not be null.
  * @param language The language of the audio file. 
  * @param model The model to use for the conversion. 
  * @param stream Whether to stream the conversion.
@@ -17,7 +18,7 @@ import com.zoominfo.karan_take_home.SpeechToTextRequest;
 @Builder
 @Schema(description = "Request DTO for speech to text conversion")
 public record SpeechToTextRequestDto(
-    @NotEmpty
+    @NotNull(message = "File is required")
     @Schema(description = "The audio file to convert to text", type = "string", format = "binary")
     MultipartFile file,
 
