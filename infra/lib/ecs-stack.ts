@@ -107,6 +107,20 @@ export class EcsStack extends cdk.Stack {
       }),
       essential: true,
       enableRestartPolicy: true,
+      healthCheck: {
+        command: [
+          'CMD-SHELL',
+          [
+            'echo "[healthcheck] running" &&',
+            'curl -sf http://localhost:8000/health',
+            '&& echo "[healthcheck] OK" || (echo "[healthcheck] FAILED" >&2; exit 1)'
+      ].join(' ')
+        ],
+        interval: cdk.Duration.seconds(30),
+        timeout: cdk.Duration.seconds(5),
+        retries: 3,
+        startPeriod: cdk.Duration.seconds(300),
+      },
     });
 
     // Ensure app starts after whisper is healthy
