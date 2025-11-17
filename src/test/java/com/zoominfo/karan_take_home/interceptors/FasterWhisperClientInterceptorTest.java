@@ -32,7 +32,7 @@ import reactor.test.StepVerifier;
 
 /**
  * Unit tests for FasterWhisperClientInterceptor.
- * Tests logging, duration measurement, and error handling for both streaming and non-streaming responses.
+ * Tests logging, duration measurement and error handling for both streaming and non-streaming responses.
  */
 class FasterWhisperClientInterceptorTest {
 
@@ -44,7 +44,6 @@ class FasterWhisperClientInterceptorTest {
     void setUp() {
         mockExchangeFunction = mock(ExchangeFunction.class);
         
-        // Set up log appender to capture log events
         logger = (Logger) LoggerFactory.getLogger(FasterWhisperClientInterceptor.class);
         logAppender = new ListAppender<>();
         logAppender.start();
@@ -54,7 +53,6 @@ class FasterWhisperClientInterceptorTest {
 
     @Test
     void testLogRequestAndResponse_NonStreaming_LogsRequestAndResponse() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .header("Content-Type", "multipart/form-data")
                 .build();
@@ -69,10 +67,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.logRequestAndResponse();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -91,7 +87,6 @@ class FasterWhisperClientInterceptorTest {
 
     @Test
     void testLogRequestAndResponse_Streaming_LogsRequestOnly() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .header("Content-Type", "multipart/form-data")
                 .build();
@@ -106,10 +101,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.logRequestAndResponse();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -122,13 +115,11 @@ class FasterWhisperClientInterceptorTest {
         
         assertThat(logMessages).anyMatch(msg -> msg.contains("Request: POST http://localhost:8000/v1/audio/transcriptions"));
         assertThat(logMessages).anyMatch(msg -> msg.contains("Streaming response status: 200"));
-        // Should NOT log full response details for streaming
         assertThat(logMessages).noneMatch(msg -> msg.contains("Response status: 200 OK") && !msg.contains("Streaming"));
     }
 
     @Test
     void testLogRequestAndResponse_ApplicationStream_LogsRequestOnly() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .build();
         
@@ -142,10 +133,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.logRequestAndResponse();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -159,7 +148,6 @@ class FasterWhisperClientInterceptorTest {
 
     @Test
     void testMeasureRequestDuration_NonStreaming_FastRequest_LogsDebug() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .build();
         
@@ -173,10 +161,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.measureRequestDuration();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -190,7 +176,6 @@ class FasterWhisperClientInterceptorTest {
 
     @Test
     void testMeasureRequestDuration_NonStreaming_SlowRequest_LogsWarn() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .build();
         
@@ -204,10 +189,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.measureRequestDuration();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -225,7 +208,6 @@ class FasterWhisperClientInterceptorTest {
 
     @Test
     void testMeasureRequestDuration_Streaming_LogsConnectionEstablished() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .build();
         
@@ -239,10 +221,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.measureRequestDuration();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -256,7 +236,6 @@ class FasterWhisperClientInterceptorTest {
 
     @Test
     void testMeasureRequestDuration_Error_LogsErrorWithDuration() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .build();
         
@@ -267,10 +246,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.measureRequestDuration();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectError(RuntimeException.class)
                 .verify();
@@ -289,7 +266,6 @@ class FasterWhisperClientInterceptorTest {
 
     @Test
     void testHandleErrorResponse_ErrorStatus_LogsError() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .build();
         
@@ -303,10 +279,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.handleErrorResponse();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -322,7 +296,6 @@ class FasterWhisperClientInterceptorTest {
 
     @Test
     void testHandleErrorResponse_SuccessStatus_NoErrorLog() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .build();
         
@@ -336,10 +309,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.handleErrorResponse();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -353,7 +324,6 @@ class FasterWhisperClientInterceptorTest {
 
     @Test
     void testHandleErrorResponse_NotFoundStatus_LogsError() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .build();
         
@@ -367,10 +337,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.handleErrorResponse();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -386,7 +354,6 @@ class FasterWhisperClientInterceptorTest {
 
     @Test
     void testAll_CombinesAllFilters() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create("http://localhost:8000/v1/audio/transcriptions"))
                 .header("Content-Type", "multipart/form-data")
                 .build();
@@ -401,10 +368,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.all();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -415,17 +380,13 @@ class FasterWhisperClientInterceptorTest {
                 .map(ILoggingEvent::getFormattedMessage)
                 .collect(Collectors.toList());
         
-        // Should have request logging
         assertThat(logMessages).anyMatch(msg -> msg.contains("Request: POST"));
-        // Should have response logging
         assertThat(logMessages).anyMatch(msg -> msg.contains("Response status: 200"));
-        // Should have duration logging
         assertThat(logMessages).anyMatch(msg -> msg.contains("completed in") && msg.contains("ms"));
     }
 
     @Test
     void testLogRequestAndResponse_NoContentType_LogsFullResponse() {
-        // Arrange
         ClientRequest request = ClientRequest.create(HttpMethod.GET, URI.create("http://localhost:8000/health"))
                 .build();
         
@@ -438,10 +399,8 @@ class FasterWhisperClientInterceptorTest {
         
         ExchangeFilterFunction filter = FasterWhisperClientInterceptor.logRequestAndResponse();
         
-        // Act
         Mono<ClientResponse> result = filter.filter(request, mockExchangeFunction);
         
-        // Assert
         StepVerifier.create(result)
                 .expectNext(response)
                 .verifyComplete();
@@ -450,7 +409,6 @@ class FasterWhisperClientInterceptorTest {
                 .map(ILoggingEvent::getFormattedMessage)
                 .collect(Collectors.toList());
         
-        // Should log full response when no content type (not streaming)
         assertThat(logMessages).anyMatch(msg -> msg.contains("Response status: 200"));
     }
 }

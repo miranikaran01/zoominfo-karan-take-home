@@ -119,7 +119,7 @@ class SpeechToTextServiceTest {
             .data(dto1)
             .build();
         ServerSentEvent<FasterWhisperResponseDto> event2 = ServerSentEvent.<FasterWhisperResponseDto>builder()
-            .data(null) // Null data should be filtered
+            .data(null)
             .build();
         FasterWhisperResponseDto dto3 = new FasterWhisperResponseDto("world!");
         ServerSentEvent<FasterWhisperResponseDto> event3 = ServerSentEvent.<FasterWhisperResponseDto>builder()
@@ -182,7 +182,7 @@ class SpeechToTextServiceTest {
         // Arrange
         SpeechToTextRequest defaultRequest = SpeechToTextRequest.builder()
             .file(mockFile)
-            .build(); // Uses defaults: language="en", model="Systran/faster-whisper-small", stream=false
+            .build();
 
         FasterWhisperResponseDto dto = new FasterWhisperResponseDto("Test transcription");
         ServerSentEvent<FasterWhisperResponseDto> event = ServerSentEvent.<FasterWhisperResponseDto>builder()

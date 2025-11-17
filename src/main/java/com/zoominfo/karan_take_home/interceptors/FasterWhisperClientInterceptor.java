@@ -1,5 +1,8 @@
 package com.zoominfo.karan_take_home.interceptors;
 
+import java.time.Duration;
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -8,9 +11,6 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
 import reactor.core.publisher.Mono;
-
-import java.time.Duration;
-import java.time.Instant;
 
 /**
  * Interceptor for FasterWhisperClient to log requests and responses,
@@ -33,21 +33,17 @@ public class FasterWhisperClientInterceptor {
             }
             return Mono.just(request);
         }).andThen((request, next) -> {
-            // Use doOnNext instead of ofResponseProcessor to avoid consuming the body
             return next.exchange(request)
                 .doOnNext(response -> {
                     if (logger.isDebugEnabled()) {
-                        // Only log headers, don't consume body
                         boolean isStreaming = response.headers().contentType()
                             .map(ct -> ct.toString().contains("text/event-stream") || 
                                        ct.toString().contains("application/stream"))
                             .orElse(false);
                         
                         if (!isStreaming) {
-                            // Only log full response for non-streaming
                             logResponse(response);
                         } else {
-                            // For streaming, just log status
                             logger.debug("Streaming response status: {}", response.statusCode().value());
                         }
                     }
@@ -70,20 +66,16 @@ public class FasterWhisperClientInterceptor {
             Instant start = Instant.now();
             return next.exchange(request)
                 .doOnNext(response -> {
-                    // Check if this is a streaming response
                     boolean isStreaming = response.headers().contentType()
                         .map(ct -> ct.toString().contains("text/event-stream") || 
                                    ct.toString().contains("application/stream"))
                         .orElse(false);
                     
                     if (isStreaming) {
-                        // For streaming, just log that connection was established
-                        // Don't consume the body - let it stream through
                         if (logger.isDebugEnabled()) {
                             logger.debug("Streaming connection established to {}", request.url());
                         }
                     } else {
-                        // For non-streaming, log duration when response is received
                         Duration duration = Duration.between(start, Instant.now());
                         if (duration.toMillis() > 5000) {
                             logger.warn("Slow request to {} took {} ms", 
@@ -105,7 +97,6 @@ public class FasterWhisperClientInterceptor {
     /**
      * Creates an ExchangeFilterFunction that handles HTTP error responses
      * and logs them appropriately.
-     * Uses doOnNext instead of ofResponseProcessor to avoid consuming streaming response bodies.
      * 
      * @return ExchangeFilterFunction for WebClient
      */

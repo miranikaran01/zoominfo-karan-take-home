@@ -104,8 +104,6 @@ class FasterWhisperRequestTest {
             file2, "en", "Systran/faster-whisper-small", true
         );
 
-        // Records use structural equality, but MultipartFile equality is by reference
-        // So these won't be equal even if fields match
         assertNotEquals(request1, request2);
         assertEquals(request1.language(), request2.language());
         assertEquals(request1.model(), request2.model());
@@ -123,7 +121,6 @@ class FasterWhisperRequestTest {
             file, "en", "Systran/faster-whisper-small", true
         );
 
-        // With the same file reference, records should be equal
         assertEquals(request1, request2);
         assertEquals(request1.hashCode(), request2.hashCode());
     }
@@ -145,9 +142,9 @@ class FasterWhisperRequestTest {
             file, "en", "Systran/faster-whisper-small", false
         );
 
-        assertNotEquals(request1, request2); // Different language
-        assertNotEquals(request1, request3); // Different model
-        assertNotEquals(request1, request4); // Different stream
+        assertNotEquals(request1, request2);
+        assertNotEquals(request1, request3);
+        assertNotEquals(request1, request4);
     }
 
     @Test
@@ -172,8 +169,6 @@ class FasterWhisperRequestTest {
             file, "en", "Systran/faster-whisper-small", true
         );
 
-        // Records are immutable - we can't modify fields
-        // This test verifies that accessors return the correct values
         assertEquals("en", request.language());
         assertEquals("Systran/faster-whisper-small", request.model());
         assertTrue(request.stream());
@@ -184,8 +179,6 @@ class FasterWhisperRequestTest {
     void testWithEmptyStringFields() {
         MockMultipartFile file = createMockFile();
         
-        // Note: @NotEmpty validation would typically catch these at runtime,
-        // but we're testing the record structure itself
         FasterWhisperRequest request = new FasterWhisperRequest(
             file, "", "", false
         );

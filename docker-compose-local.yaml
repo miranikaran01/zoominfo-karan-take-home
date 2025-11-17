@@ -6,8 +6,6 @@ services:
       - 8000:8000
     restart: unless-stopped
     environment:
-      # Use the smallest model to minimize resource usage
-      # Note: Use WHISPER__MODEL (double underscore) to set the nested whisper.model config
       WHISPER__MODEL: Systran/faster-whisper-small
 
   karan-take-home:
@@ -22,5 +20,4 @@ services:
     depends_on:
       - faster-whisper-server
     environment:
-      # Use service name for Docker Compose networking
       WHISPER_URL: http://faster-whisper-server:8000

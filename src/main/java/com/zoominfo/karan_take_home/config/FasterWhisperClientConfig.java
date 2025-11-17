@@ -19,12 +19,9 @@ public class FasterWhisperClientConfig {
     
     @Bean
     public FasterWhisperClient fasterWhisperClient() {
-        // Configure codecs to handle SSE streams properly
-        // Spring WebFlux automatically handles ServerSentEvent when return type is Flux<ServerSentEvent<T>>
         ExchangeStrategies strategies = ExchangeStrategies.builder()
             .codecs(configurer -> {
-                // Increase buffer size for large streaming responses
-                configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024); // 10MB
+                configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024);
             })
             .build();
         

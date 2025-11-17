@@ -186,8 +186,6 @@ class SpeechToTextRequestTest {
             .stream(false)
             .build();
 
-        // Records use structural equality, but MultipartFile equality is by reference
-        // So these won't be equal even if fields match
         assertNotEquals(request1, request2);
         assertEquals(request1.language(), request2.language());
         assertEquals(request1.model(), request2.model());
