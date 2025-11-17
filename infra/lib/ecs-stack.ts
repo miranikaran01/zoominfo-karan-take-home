@@ -102,7 +102,7 @@ export class EcsStack extends cdk.Stack {
         interval: cdk.Duration.seconds(30),
         timeout: cdk.Duration.seconds(5),
         retries: 3,
-        startPeriod: cdk.Duration.seconds(180),
+        startPeriod: cdk.Duration.seconds(300),
       },
     });
 
