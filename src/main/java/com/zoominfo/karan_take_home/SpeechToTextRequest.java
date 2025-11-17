@@ -22,6 +22,9 @@ public record SpeechToTextRequest(
 ) {
     public SpeechToTextRequest(MultipartFile file, String language, String model, Boolean stream) {
         this.file = file;
+        if (file.getContentType() == null || !file.getContentType().startsWith("audio/")) {
+            throw new IllegalArgumentException("File must be an audio file");
+        }
         if (language == null || language.isEmpty()) {
             this.language = "en";
         } else {
