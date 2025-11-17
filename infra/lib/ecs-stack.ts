@@ -28,15 +28,14 @@ export class EcsStack extends cdk.Stack {
     );
 
     // Fargate service with ALB
-    // Total: 4 vCPU (4096 CPU units) and 9GB (9216 MiB) shared memory
     const albFargate = new ecsPatterns.ApplicationLoadBalancedFargateService(
       this,
       'speech-to-text-service',
       {
         cluster,
         desiredCount: 1,
-        cpu: 4096, // 4 vCPU total
-        memoryLimitMiB: 9216, // 9 GB total shared memory
+        cpu: 4096,
+        memoryLimitMiB: 9216,
         publicLoadBalancer: true,
         runtimePlatform: {
           cpuArchitecture: ecs.CpuArchitecture.ARM64,
@@ -47,14 +46,12 @@ export class EcsStack extends cdk.Stack {
           image: ecs.ContainerImage.fromEcrRepository(appRepo, imageTag),
           containerPort: 8080,
           environment: {
-            // Point app at whisper sidecar
             WHISPER_URL: 'http://localhost:8000',
           },
         },
       },
     );
 
-    // ALB / TARGET GROUP HEALTH CHECK FOR SPEECH-TO-TEXT
     albFargate.targetGroup.configureHealthCheck({
       path: '/management/health',
       interval: cdk.Duration.seconds(30),
@@ -72,28 +69,13 @@ export class EcsStack extends cdk.Stack {
       throw new Error('Default container not found');
     }
 
-    // Set resource limits for speech-to-text container
-    // 0.5 vCPU (512 CPU units) and 1GB (1024 MiB) memory
-    // Note: For Fargate, we use escape hatch to set container-level CPU and memory
-    // 0.5 vCPU = 0.5 * 1024 = 512 CPU units
-    const cfnTaskDef = taskDef.node.defaultChild as ecs.CfnTaskDefinition;
-    // Update app container (index 0) resources: 0.5 vCPU (512 CPU units) and 1GB (1024 MiB)
-    cfnTaskDef.addPropertyOverride('ContainerDefinitions.0.Cpu', 512);
-    cfnTaskDef.addPropertyOverride('ContainerDefinitions.0.Memory', 1024);
-
-    // Sidecar: faster-whisper-server from Docker Hub
-    // 3.5 vCPU (3584 CPU units) and 8GB (8192 MiB) memory
-    // 3.5 vCPU = 3.5 * 1024 = 3584 CPU units
     const whisperContainer = taskDef.addContainer('faster-whisper-server', {
       containerName: 'faster-whisper-server',
       image: ecs.ContainerImage.fromRegistry(
         'fedirz/faster-whisper-server:sha-307e23f-cpu',
       ),
-      cpu: 3584, // 3.5 vCPU (3584 CPU units)
-      memoryLimitMiB: 8192, // 8 GB
+      memoryLimitMiB: 8192,
       environment: {
-        // Use the smallest model to minimize resource usage
-        // Note: Use WHISPER__MODEL (double underscore) to set the nested whisper.model config
         WHISPER__MODEL: 'Systran/faster-whisper-small',
       },
       portMappings: [
@@ -123,7 +105,12 @@ export class EcsStack extends cdk.Stack {
       },
     });
 
-    // Ensure app starts after whisper is healthy
+    const cfnTaskDef = taskDef.node.defaultChild as ecs.CfnTaskDefinition;
+    cfnTaskDef.addPropertyOverride('ContainerDefinitions.0.Cpu', 512);
+    cfnTaskDef.addPropertyOverride('ContainerDefinitions.0.Memory', 1024);
+    cfnTaskDef.addPropertyOverride('ContainerDefinitions.1.Cpu', 3584);
+    cfnTaskDef.addPropertyOverride('ContainerDefinitions.1.Memory', 8192);
+
     appContainer.addContainerDependencies({
       container: whisperContainer,
       condition: ecs.ContainerDependencyCondition.HEALTHY,
