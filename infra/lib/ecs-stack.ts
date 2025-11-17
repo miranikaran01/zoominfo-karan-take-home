@@ -79,6 +79,10 @@ export class EcsStack extends cdk.Stack {
       ),
       cpu: 1536, // 1.5 vCPU of the 2
       memoryLimitMiB: 3584,
+      environment: {
+        // Use the smallest model to minimize resource usage
+        MODEL: 'Systran/faster-whisper-small',
+      },
       portMappings: [
         {
           containerPort: 8000,
@@ -97,7 +101,7 @@ export class EcsStack extends cdk.Stack {
         interval: cdk.Duration.seconds(30),
         timeout: cdk.Duration.seconds(5),
         retries: 3,
-        startPeriod: cdk.Duration.seconds(60),
+        startPeriod: cdk.Duration.seconds(120),
       },
     });
 

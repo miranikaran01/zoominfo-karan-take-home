@@ -62,8 +62,11 @@ If you prefer to run the application directly:
 1. **Start the Faster Whisper server**:
    ```bash
    docker run -d -p 8000:8000 --name faster-whisper \
+     -e MODEL=Systran/faster-whisper-small \
      fedirz/faster-whisper-server:sha-307e23f-cpu
    ```
+   
+   **Note**: The `MODEL=Systran/faster-whisper-small` environment variable configures the server to use the smallest model, which minimizes resource usage.
 
 2. **Set environment variable**:
    ```bash

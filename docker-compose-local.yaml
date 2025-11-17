@@ -5,6 +5,9 @@ services:
     ports:
       - 8000:8000
     restart: unless-stopped
+    environment:
+      # Use the smallest model to minimize resource usage
+      MODEL: Systran/faster-whisper-small
 
   karan-take-home:
     build:
