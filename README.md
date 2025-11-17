@@ -96,6 +96,8 @@ Transcribes an audio file to text using the Faster Whisper model.
 **Example using cURL (Production):**
 ```bash
 curl -X POST http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/speech-to-text \
+  -H "Content-Type: multipart/form-data" \
+  -H "Accept: text/event-stream" \
   -F "file=@audio.wav" \
   -F "language=en" \
   -F "model=Systran/faster-whisper-small" \
@@ -106,6 +108,8 @@ curl -X POST http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.
 **Example using cURL (Local):**
 ```bash
 curl -X POST http://localhost:8080/speech-to-text \
+  -H "Content-Type: multipart/form-data" \
+  -H "Accept: text/event-stream" \
   -F "file=@audio.wav" \
   -F "language=en" \
   -F "model=Systran/faster-whisper-small" \
@@ -140,7 +144,8 @@ GET http://localhost:8080/management/health
 
 You can test the health check live against the production server using:
 ```bash
-curl http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/management/health
+curl -H "Accept: application/json" \
+  http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/management/health
 ```
 ## Architecture
 
@@ -238,6 +243,8 @@ curl -OL https://archive.org/download/carrados_librivox/four_max_carrados_detect
 
 # Test transcription against production server
 curl -X POST http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/speech-to-text \
+  -H "Content-Type: multipart/form-data" \
+  -H "Accept: text/event-stream" \
   -F "file=@four_max_carrados_detective_stories_04_bramah.mp3" \
   -F "language=en" \
   -F "stream=true" \
@@ -251,6 +258,8 @@ curl -O https://archive.org/download/carrados_librivox/four_max_carrados_detecti
 
 # Test transcription locally
 curl -X POST http://localhost:8080/speech-to-text \
+  -H "Content-Type: multipart/form-data" \
+  -H "Accept: text/event-stream" \
   -F "file=@four_max_carrados_detective_stories_04_bramah.mp3" \
   -F "language=en" \
   -F "stream=true" \
