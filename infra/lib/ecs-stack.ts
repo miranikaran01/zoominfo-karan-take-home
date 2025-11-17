@@ -13,33 +13,33 @@ export class EcsStack extends cdk.Stack {
     const imageTag = process.env.IMAGE_TAG ?? 'latest';
 
     const vpc = new ec2.Vpc(this, 'speech-to-text-vpc', {
-      maxAzs: 2
+      maxAzs: 2,
     });
 
     const cluster = new ecs.Cluster(this, 'speech-to-text-cluster', {
-      vpc
+      vpc,
     });
 
     // ECR repo for speech-to-text app
     const appRepo = ecr.Repository.fromRepositoryName(
       this,
       'speech-to-text-app-repo',
-      'speech-to-text'
+      'speech-to-text',
     );
 
-    // Fargate service with ALB 
+    // Fargate service with ALB
     const albFargate = new ecsPatterns.ApplicationLoadBalancedFargateService(
       this,
       'speech-to-text-service',
       {
         cluster,
         desiredCount: 1,
-        cpu: 2048,           // 2 vCPU
+        cpu: 2048, // 2 vCPU
         memoryLimitMiB: 4096, // 4 GB – give Whisper some room
         publicLoadBalancer: true,
         runtimePlatform: {
           cpuArchitecture: ecs.CpuArchitecture.ARM64,
-          operatingSystemFamily: ecs.OperatingSystemFamily.LINUX
+          operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
         },
         taskImageOptions: {
           containerName: 'speech-to-text',
@@ -47,11 +47,22 @@ export class EcsStack extends cdk.Stack {
           containerPort: 8080,
           environment: {
             // Point app at whisper sidecar
-            WHISPER_URL: 'http://localhost:8000'
-          }
-        }
-      }
+            WHISPER_URL: 'http://localhost:8000',
+          },
+        },
+      },
     );
+
+    // ALB / TARGET GROUP HEALTH CHECK FOR SPEECH-TO-TEXT
+    albFargate.targetGroup.configureHealthCheck({
+      path: '/management/health',
+      interval: cdk.Duration.seconds(30),
+      timeout: cdk.Duration.seconds(5),
+      healthyHttpCodes: '200',
+      port: 'traffic-port',
+      unhealthyThresholdCount: 3,
+      healthyThresholdCount: 3,
+    });
 
     const taskDef = albFargate.taskDefinition;
     const appContainer = taskDef.defaultContainer;
@@ -61,40 +72,39 @@ export class EcsStack extends cdk.Stack {
     }
 
     // Sidecar: faster-whisper-server from Docker Hub
-    // Note: Ensure the image supports ARM64 architecture
-    // If the image doesn't support ARM64, you may need to use a different tag or build a custom ARM64 image
     const whisperContainer = taskDef.addContainer('faster-whisper-server', {
       containerName: 'faster-whisper-server',
       image: ecs.ContainerImage.fromRegistry(
-        'fedirz/faster-whisper-server:sha-307e23f-cpu'
+        'fedirz/faster-whisper-server:sha-307e23f-cpu',
       ),
-      cpu: 1536,           // 1.5 vCPU of the 2
+      cpu: 1536, // 1.5 vCPU of the 2
       memoryLimitMiB: 3584,
       portMappings: [
         {
           containerPort: 8000,
-          protocol: ecs.Protocol.TCP
-        }
+          protocol: ecs.Protocol.TCP,
+        },
       ],
       logging: ecs.LogDrivers.awsLogs({
-        streamPrefix: 'faster-whisper'
+        streamPrefix: 'faster-whisper',
       }),
+      // ECS CONTAINER HEALTH CHECK FOR FASTER-WHISPER
       healthCheck: {
         command: [
           'CMD-SHELL',
-          'curl -f http://localhost:8000/health || exit 1'
+          'curl -f http://localhost:8000/health || exit 1',
         ],
         interval: cdk.Duration.seconds(30),
         timeout: cdk.Duration.seconds(5),
         retries: 3,
-        startPeriod: cdk.Duration.seconds(60)
-      }
+        startPeriod: cdk.Duration.seconds(60),
+      },
     });
 
     // Ensure app starts after whisper is healthy
     appContainer.addContainerDependencies({
       container: whisperContainer,
-      condition: ecs.ContainerDependencyCondition.HEALTHY
+      condition: ecs.ContainerDependencyCondition.HEALTHY,
     });
   }
 }
