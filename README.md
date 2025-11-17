@@ -234,7 +234,7 @@ You can download and test the service with this file using:
 **Production:**
 ```bash
 # Download the test file
-curl -O https://archive.org/download/carrados_librivox/four_max_carrados_detective_stories_04_bramah.mp3
+curl -OL https://archive.org/download/carrados_librivox/four_max_carrados_detective_stories_04_bramah.mp3
 
 # Test transcription against production server
 curl -X POST http://Speech-speec-K3QuDBYTTlJW-985865704.us-east-1.elb.amazonaws.com/speech-to-text \
