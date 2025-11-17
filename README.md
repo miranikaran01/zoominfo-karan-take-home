@@ -119,6 +119,8 @@ curl -X POST http://localhost:8080/speech-to-text \
   --no-buffer
 ```
 
+**Note**: This service has been tested with the [Four Max Carrados Detective Stories MP3 file](https://archive.org/download/carrados_librivox/four_max_carrados_detective_stories_04_bramah.mp3) from Archive.org. See the [Testing](#testing) section for more details.
+
 **Example using Swagger UI:**
 Navigate to `http://localhost:8080/api/v1/docs` and use the interactive interface.
 
@@ -254,6 +256,29 @@ Run the test suite:
 ```
 
 Test configuration is in `src/test/resources/application-test.properties` with adjusted file size limits for testing.
+
+### Tested Audio Files
+
+This application has been tested with the following audio file:
+
+- **MP3 Audio File**: [Four Max Carrados Detective Stories - The Last Exploit of Harry the Actor](https://archive.org/download/carrados_librivox/four_max_carrados_detective_stories_04_bramah.mp3)
+  - Source: Archive.org (LibriVox)
+  - Format: MP3
+  - Description: Audiobook chapter from "Four Max Carrados Detective Stories" by Ernest Bramah
+
+You can download and test the service with this file using:
+
+```bash
+# Download the test file
+curl -O https://archive.org/download/carrados_librivox/four_max_carrados_detective_stories_04_bramah.mp3
+
+# Test transcription
+curl -X POST http://localhost:8080/speech-to-text \
+  -F "file=@four_max_carrados_detective_stories_04_bramah.mp3" \
+  -F "language=en" \
+  -F "stream=true" \
+  --no-buffer
+```
 
 ## Deployment
 

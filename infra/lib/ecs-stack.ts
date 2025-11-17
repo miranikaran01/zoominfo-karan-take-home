@@ -37,6 +37,10 @@ export class EcsStack extends cdk.Stack {
         cpu: 2048,           // 2 vCPU
         memoryLimitMiB: 4096, // 4 GB – give Whisper some room
         publicLoadBalancer: true,
+        runtimePlatform: {
+          cpuArchitecture: ecs.CpuArchitecture.ARM64,
+          operatingSystemFamily: ecs.OperatingSystemFamily.LINUX
+        },
         taskImageOptions: {
           containerName: 'speech-to-text',
           image: ecs.ContainerImage.fromEcrRepository(appRepo, imageTag),
@@ -57,6 +61,8 @@ export class EcsStack extends cdk.Stack {
     }
 
     // Sidecar: faster-whisper-server from Docker Hub
+    // Note: Ensure the image supports ARM64 architecture
+    // If the image doesn't support ARM64, you may need to use a different tag or build a custom ARM64 image
     const whisperContainer = taskDef.addContainer('faster-whisper-server', {
       containerName: 'faster-whisper-server',
       image: ecs.ContainerImage.fromRegistry(

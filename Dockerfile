@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21.0.9_10-jre
+FROM --platform=linux/arm64 eclipse-temurin:21.0.9_10-jre
 WORKDIR /app
 
 COPY build/libs/*.jar app.jar

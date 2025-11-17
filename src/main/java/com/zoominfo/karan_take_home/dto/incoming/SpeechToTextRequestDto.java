@@ -28,7 +28,7 @@ public record SpeechToTextRequestDto(
     String model,
 
     @Schema(description = "Whether to stream the conversion", example = "false")
-    boolean stream
+    Boolean stream
 ) {
     public SpeechToTextRequest toRequest() {
         return SpeechToTextRequest.builder()

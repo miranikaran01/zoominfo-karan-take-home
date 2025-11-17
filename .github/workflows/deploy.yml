@@ -42,13 +42,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push Docker image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build, tag, and push Docker image (ARM64)
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/${ECR_REPOSITORY}:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/${ECR_REPOSITORY}:$IMAGE_TAG
+          docker buildx build \
+            --platform linux/arm64 \
+            --tag $ECR_REGISTRY/${ECR_REPOSITORY}:$IMAGE_TAG \
+            --push \
+            .
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Set up Node.js

@@ -21,8 +21,8 @@ public class FasterWhisperClientInterceptor {
     private static final Logger logger = LoggerFactory.getLogger(FasterWhisperClientInterceptor.class);
     
     /**
-     * Creates an ExchangeFilterFunction that logs request and response details
-     * and measures request duration.
+     * Creates an ExchangeFilterFunction that logs request and response details.
+     * For streaming responses, only logs request (not response) to avoid interfering with the stream.
      * 
      * @return ExchangeFilterFunction for WebClient
      */
@@ -32,17 +32,36 @@ public class FasterWhisperClientInterceptor {
                 logRequest(request);
             }
             return Mono.just(request);
-        }).andThen(ExchangeFilterFunction.ofResponseProcessor(response -> {
-            if (logger.isDebugEnabled()) {
-                logResponse(response);
-            }
-            return Mono.just(response);
-        }));
+        }).andThen((request, next) -> {
+            // Use doOnNext instead of ofResponseProcessor to avoid consuming the body
+            return next.exchange(request)
+                .doOnNext(response -> {
+                    if (logger.isDebugEnabled()) {
+                        // Only log headers, don't consume body
+                        boolean isStreaming = response.headers().contentType()
+                            .map(ct -> ct.toString().contains("text/event-stream") || 
+                                       ct.toString().contains("application/stream"))
+                            .orElse(false);
+                        
+                        if (!isStreaming) {
+                            // Only log full response for non-streaming
+                            logResponse(response);
+                        } else {
+                            // For streaming, just log status
+                            logger.debug("Streaming response status: {}", response.statusCode().value());
+                        }
+                    }
+                });
+        });
     }
     
     /**
      * Creates an ExchangeFilterFunction that measures request duration
      * and logs slow requests.
+     * 
+     * For streaming responses (SSE), this does not interfere with the stream.
+     * Duration logging for streaming happens when the connection is established,
+     * not when the stream completes, to avoid consuming the response body.
      * 
      * @return ExchangeFilterFunction for WebClient
      */
@@ -50,14 +69,29 @@ public class FasterWhisperClientInterceptor {
         return (request, next) -> {
             Instant start = Instant.now();
             return next.exchange(request)
-                .doOnSuccess(response -> {
-                    Duration duration = Duration.between(start, Instant.now());
-                    if (duration.toMillis() > 5000) {
-                        logger.warn("Slow request to {} took {} ms", 
-                            request.url(), duration.toMillis());
-                    } else if (logger.isDebugEnabled()) {
-                        logger.debug("Request to {} completed in {} ms", 
-                            request.url(), duration.toMillis());
+                .doOnNext(response -> {
+                    // Check if this is a streaming response
+                    boolean isStreaming = response.headers().contentType()
+                        .map(ct -> ct.toString().contains("text/event-stream") || 
+                                   ct.toString().contains("application/stream"))
+                        .orElse(false);
+                    
+                    if (isStreaming) {
+                        // For streaming, just log that connection was established
+                        // Don't consume the body - let it stream through
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Streaming connection established to {}", request.url());
+                        }
+                    } else {
+                        // For non-streaming, log duration when response is received
+                        Duration duration = Duration.between(start, Instant.now());
+                        if (duration.toMillis() > 5000) {
+                            logger.warn("Slow request to {} took {} ms", 
+                                request.url(), duration.toMillis());
+                        } else if (logger.isDebugEnabled()) {
+                            logger.debug("Request to {} completed in {} ms", 
+                                request.url(), duration.toMillis());
+                        }
                     }
                 })
                 .doOnError(error -> {
@@ -71,20 +105,23 @@ public class FasterWhisperClientInterceptor {
     /**
      * Creates an ExchangeFilterFunction that handles HTTP error responses
      * and logs them appropriately.
+     * Uses doOnNext instead of ofResponseProcessor to avoid consuming streaming response bodies.
      * 
      * @return ExchangeFilterFunction for WebClient
      */
     public static ExchangeFilterFunction handleErrorResponse() {
-        return ExchangeFilterFunction.ofResponseProcessor(response -> {
-            if (response.statusCode().isError()) {
-                String reasonPhrase = response.statusCode() instanceof HttpStatus 
-                    ? ((HttpStatus) response.statusCode()).getReasonPhrase()
-                    : "";
-                logger.error("Error response from FasterWhisper API: {} {}", 
-                    response.statusCode().value(), reasonPhrase);
-            }
-            return Mono.just(response);
-        });
+        return (request, next) -> {
+            return next.exchange(request)
+                .doOnNext(response -> {
+                    if (response.statusCode().isError()) {
+                        String reasonPhrase = response.statusCode() instanceof HttpStatus 
+                            ? ((HttpStatus) response.statusCode()).getReasonPhrase()
+                            : "";
+                        logger.error("Error response from FasterWhisper API: {} {}", 
+                            response.statusCode().value(), reasonPhrase);
+                    }
+                });
+        };
     }
     
     /**

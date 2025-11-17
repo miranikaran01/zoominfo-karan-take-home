@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,27 +22,21 @@ import reactor.core.publisher.Flux;
 @RestController
 @RequiredArgsConstructor
 public class SpeechToTextController {
-    
+
     private final SpeechToTextService speechToTextService;
-    
-    @Operation(
-        summary = "Convert speech to text",
-        description = "Transcribes an audio file to text using the Faster Whisper model",
-        requestBody = @RequestBody(
-            description = "Audio file and transcription parameters",
-            required = true,
-            content = @Content(
-                mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                schema = @Schema(implementation = SpeechToTextRequestDto.class)
-            )
-        )
-    )
+
     @PostMapping(
-        path = "/speech-to-text", 
+        path = "/speech-to-text",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
         produces = MediaType.TEXT_EVENT_STREAM_VALUE
     )
-    public Flux<SpeechToTextResponseDto> speechToText(@ModelAttribute SpeechToTextRequestDto requestDto) {
-        return speechToTextService.transcribe(requestDto.toRequest()).map(SpeechToTextResponseDto::from);
+    public Flux<ServerSentEvent<SpeechToTextResponseDto>> speechToText(
+            @ModelAttribute SpeechToTextRequestDto requestDto) {
+
+        return speechToTextService.transcribe(requestDto.toRequest())
+                .map(response -> ServerSentEvent.<SpeechToTextResponseDto>builder()
+                        .data(SpeechToTextResponseDto.from(response))
+                        .build());
     }
 }
+

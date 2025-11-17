@@ -18,11 +18,10 @@ public record SpeechToTextRequest(
     MultipartFile file,
     String language,
     String model,
-    boolean stream
+    Boolean stream
 ) {
-    public SpeechToTextRequest(MultipartFile file, String language, String model, boolean stream) {
+    public SpeechToTextRequest(MultipartFile file, String language, String model, Boolean stream) {
         this.file = file;
-        this.stream = stream;
         if (language == null || language.isEmpty()) {
             this.language = "en";
         } else {
@@ -32,6 +31,11 @@ public record SpeechToTextRequest(
             this.model = "Systran/faster-whisper-small";
         } else {
             this.model = model;
+        }
+        if (stream == null) {
+            this.stream = false;
+        } else {
+            this.stream = stream;
         }
     }
 }

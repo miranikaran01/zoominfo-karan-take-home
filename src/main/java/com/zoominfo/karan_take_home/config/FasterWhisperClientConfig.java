@@ -3,6 +3,7 @@ package com.zoominfo.karan_take_home.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.support.WebClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
@@ -18,10 +19,21 @@ public class FasterWhisperClientConfig {
     
     @Bean
     public FasterWhisperClient fasterWhisperClient() {
+        // Configure codecs to handle SSE streams properly
+        // Spring WebFlux automatically handles ServerSentEvent when return type is Flux<ServerSentEvent<T>>
+        ExchangeStrategies strategies = ExchangeStrategies.builder()
+            .codecs(configurer -> {
+                // Increase buffer size for large streaming responses
+                configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024); // 10MB
+            })
+            .build();
+        
         WebClient webClient = WebClient.builder()
             .baseUrl(fasterWhisperUrl)
+            .exchangeStrategies(strategies)
             .filter(FasterWhisperClientInterceptor.all())
             .build();
+        
         HttpServiceProxyFactory factory = HttpServiceProxyFactory.builder()
             .exchangeAdapter(WebClientAdapter.create(webClient))
             .build();
