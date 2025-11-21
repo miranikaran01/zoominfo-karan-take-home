@@ -62,7 +62,7 @@ public class SpeechToTextController {
     )
     public Flux<ServerSentEvent<SpeechToTextResponseDto>> speechToText(
             @Valid @ModelAttribute SpeechToTextRequestDto requestDto) {
-
+        System.out.println("Received api call" + requestDto.toString());
         return speechToTextService.transcribe(requestDto.toRequest())
                 .map(response -> ServerSentEvent.<SpeechToTextResponseDto>builder()
                         .data(SpeechToTextResponseDto.from(response))
